@@ -1,0 +1,44 @@
+
+dbms - primary user - all links + trigger on voter for 'male'
+prefect - mvoters - procedure mData
+monitor - fvoters - to be made procedure fData
+
+
+link in dbms
+
+create public database link ln_dbms_prefect connect to prefect identified by topaz using 'XE';
+
+Database link created.
+
+
+procedure in prefect
+
+create or replace
+procedure mData
+(name in varchar2,gender in varchar2,aadhar in varchar2)
+as
+begin
+	insert into mvoters@ln_dbms_prefect(name,gender,aadhar) values(name,gender,aadhar);
+end;
+/
+
+Procedure created.
+
+
+
+trigger in dbms
+
+create or replace trigger
+gender_division
+after insert on
+voter
+referencing old as old new as new
+for each row
+begin
+	if(:new.gender='male') then
+		mData@ln_dbms_prefect(:new.name,:new.gender,:new.aadhar);
+	end if;
+end;  
+/
+
+Trigger created.
